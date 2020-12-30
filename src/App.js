@@ -12,7 +12,9 @@ const App = () =>{
       cards: [],
       error: null,
       isLoaded: false,
-      itemZones:[] //宣告一個新的陣列(不重複區域)
+      itemZones:[], //宣告一個新的陣列(不重複區域)
+      cardByZone: [],
+      currentZone:''
     });
 
 
@@ -24,24 +26,48 @@ useEffect(()=>{
         (data) => {
           setState({
             isLoaded: true,
-            cards: data.result.records,
+            cards: data.result.records,//all
             // 過濾重複的區域資料，並存在 itemZones 的新陣列中
             itemZones: data.result.records.map((item)=>(item.Zone)).filter(function(element, index, arr){
                 return arr.indexOf(element) === index;
-            })
-
+            }),
+            cardByZone: [],
+            currentZone:''
           });
         },
         (sError) => {
           setState({
             isLoaded: true,
             error:sError,
-            // cards:null
+            ...state
+            
           });
         }
       )
 },[]);
-const { cards } = state;
+
+const getCureentZone = (zone) =>{
+  console.log('zome',zone);
+
+  // console.log(zone);
+  //篩選資料 來源 cards
+  
+  
+//   cardByZone = cards.filter(function(element){
+//     return element.Zone === zone;
+// })
+
+setState({
+   ...state, //????
+   cardByZone : cards.filter(function(element){
+    return element.Zone === zone;
+  }),
+  currentZone: zone
+});
+  console.log('cardByZone',state.cardByZone)
+}
+
+const { cards,itemZones ,cardByZone,currentZone} = state;
 
 
 return (
@@ -49,7 +75,7 @@ return (
       <header className="banner">
         <div className="container">
             <h1>高雄旅遊資訊網</h1>
-            <Dropdown itemZones= {state.itemZones}/>
+            <Dropdown itemZones= {itemZones} getZone={getCureentZone}/>
             {/* <select id="selectName">
           
             </select> */}
@@ -73,14 +99,12 @@ return (
     </header>
     <div className="content container"> 
         <div className="main">
-            <h2 className="title-main">請先選擇區域</h2>
+            <h2 className="title-main">{currentZone}</h2>
             <ul className="list">
             {/* 測試用:先撈五筆卡片資料 */}
-            {cards.map(function(card,index){
-                if(index<5)
-                    return <Card item={card}/>
-                else
-                    return null
+
+            {cardByZone.map(function(card,index){
+                 return <Card key={card.Id} item={card}/>
             })}
             {/* {cards.map((card) =>(
              <Card item={card}/>
